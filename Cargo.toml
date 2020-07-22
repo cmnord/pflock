@@ -1,0 +1,13 @@
+[package]
+name = "pflock"
+version = "0.1.0"
+authors = ["Claire Nord <cnord@mit.edu>"]
+edition = "2018"
+license = "MIT"
+description = "A phase-fair reader-writer lock that reduces worst-case blocking for readers. Especially useful for multiprocessor real-time systems."
+repository = "https://github.com/cmnord/pflock"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
