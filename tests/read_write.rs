@@ -3,19 +3,20 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Instant;
 
-const NUM_ITERATIONS: usize = 3_000;
+const NUM_ITERATIONS: usize = 1_000;
 
 #[test]
-fn reads() {
+fn read_write() {
     let lock = Arc::new(PFLock::new());
 
     let mut threads = vec![];
 
     let now = Instant::now();
-    for _ in 0..NUM_ITERATIONS {
+    for i in 0..NUM_ITERATIONS {
         let arc_clone = Arc::clone(&lock);
         threads.push(thread::spawn(move || {
             arc_clone.read_lock();
+            println!("r{}", i);
             arc_clone.read_unlock();
         }));
     }
@@ -26,19 +27,15 @@ fn reads() {
     }
     let elapsed = now.elapsed();
     println!("read elapsed = {:?}", elapsed);
-}
-
-#[test]
-fn writes() {
-    let lock = Arc::new(PFLock::new());
 
     let mut threads = vec![];
 
     let now = Instant::now();
-    for _ in 0..NUM_ITERATIONS {
+    for i in 0..NUM_ITERATIONS {
         let arc_clone = Arc::clone(&lock);
         threads.push(thread::spawn(move || {
             arc_clone.write_lock();
+            println!("w{}", i);
             arc_clone.write_unlock();
         }));
     }
@@ -50,3 +47,6 @@ fn writes() {
     let elapsed = now.elapsed();
     println!("write elapsed = {:?}", elapsed);
 }
+
+#[test]
+fn writes() {}
