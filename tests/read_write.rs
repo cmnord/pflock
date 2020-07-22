@@ -3,7 +3,7 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Instant;
 
-const NUM_ITERATIONS: usize = 1_000;
+const NUM_ITERATIONS: usize = 10_000;
 
 fn read_serial() {
     let lock = Arc::new(PFLock::new());
@@ -11,8 +11,12 @@ fn read_serial() {
     let now = Instant::now();
     for i in 0..NUM_ITERATIONS {
         let arc_clone = Arc::clone(&lock);
-        arc_clone.read_lock();
-        arc_clone.read_unlock();
+        thread::spawn(move || {
+            arc_clone.read_lock();
+            arc_clone.read_unlock();
+        })
+        .join()
+        .unwrap();
     }
 
     let elapsed = now.elapsed();
@@ -47,8 +51,12 @@ fn write_serial() {
     let now = Instant::now();
     for i in 0..NUM_ITERATIONS {
         let arc_clone = Arc::clone(&lock);
-        arc_clone.write_lock();
-        arc_clone.write_unlock();
+        thread::spawn(move || {
+            arc_clone.write_lock();
+            arc_clone.write_unlock();
+        })
+        .join()
+        .unwrap();
     }
 
     let elapsed = now.elapsed();
