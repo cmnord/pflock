@@ -25,7 +25,7 @@ impl PFLock {
     pub fn read_lock(&self) {
         let w: usize;
         w = self.rin.fetch_add(RINC, Ordering::SeqCst) & WBITS;
-        while !(w == 0 || w != self.rin.load(Ordering::SeqCst) & WBITS) {}
+        while !(w == 0 || w != (self.rin.load(Ordering::SeqCst) & WBITS)) {}
     }
 
     pub fn read_unlock(&self) {
