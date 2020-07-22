@@ -1,7 +1,7 @@
 # PFlock: Phase-Fair Reader-Writer Lock
 
-From "Reader-Writer Synchronization for Shared-Memory Multiprocessor Real-Time
-Systems" by Brandenburg et. al.
+From ["Reader-Writer Synchronization for Shared-Memory Multiprocessor Real-Time
+Systems"][paper] by Brandenburg et. al.
 
 ```latex
 @inproceedings{brandenburg2009reader,
@@ -13,3 +13,5 @@ Systems" by Brandenburg et. al.
   organization={IEEE}
 }
 ```
+
+[paper]: https://www.cs.unc.edu/~anderson/papers/ecrts09b.pdf
