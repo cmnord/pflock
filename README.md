@@ -3,7 +3,7 @@
 From "Reader-Writer Synchronization for Shared-Memory Multiprocessor Real-Time
 Systems" by Brandenburg et. al.
 
-```
+```latex
 @inproceedings{brandenburg2009reader,
   title={Reader-writer synchronization for shared-memory multiprocessor real-time systems},
   author={Brandenburg, Bj{\"o}rn B and Anderson, James H},
