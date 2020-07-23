@@ -12,6 +12,8 @@ const WBITS: usize = 0x3; // writer bits in rin
 const PRES: usize = 0x2; // writer present bit
 const PHID: usize = 0x1; // phase ID bit
 
+const ZERO_MASK: usize = !255usize;
+
 impl PFLock {
     pub const fn new() -> PFLock {
         PFLock {
@@ -50,8 +52,7 @@ impl PFLock {
 
     pub fn write_unlock(&self) {
         // zero the least-significant byte of rin
-        let mask = !255usize;
-        self.rin.fetch_and(mask, Ordering::SeqCst);
+        self.rin.fetch_and(ZERO_MASK, Ordering::SeqCst);
         self.wout.fetch_add(1, Ordering::SeqCst);
     }
 }
