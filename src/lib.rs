@@ -1,4 +1,4 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{spin_loop_hint, AtomicUsize, Ordering};
 
 pub struct PFLock {
     pub rin: AtomicUsize,
@@ -25,7 +25,9 @@ impl PFLock {
     pub fn read_lock(&self) {
         let w: usize;
         w = self.rin.fetch_add(RINC, Ordering::SeqCst) & WBITS;
-        while !(w == 0 || w != (self.rin.load(Ordering::SeqCst) & WBITS)) {}
+        while !(w == 0 || w != (self.rin.load(Ordering::SeqCst) & WBITS)) {
+            spin_loop_hint();
+        }
     }
 
     pub fn read_unlock(&self) {
@@ -36,10 +38,14 @@ impl PFLock {
         let mut ticket: usize;
         let w: usize;
         ticket = self.win.fetch_add(1, Ordering::SeqCst);
-        while !(ticket == self.wout.load(Ordering::SeqCst)) {}
+        while !(ticket == self.wout.load(Ordering::SeqCst)) {
+            spin_loop_hint();
+        }
         w = PRES | (ticket & PHID);
         ticket = self.rin.fetch_add(w, Ordering::SeqCst);
-        while !(ticket == self.rout.load(Ordering::SeqCst)) {}
+        while !(ticket == self.rout.load(Ordering::SeqCst)) {
+            spin_loop_hint();
+        }
     }
 
     pub fn write_unlock(&self) {
