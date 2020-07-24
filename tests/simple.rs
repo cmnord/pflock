@@ -24,31 +24,34 @@ impl<T> DummyStruct<T> {
 }
 
 #[test]
-fn increment() {
+fn simple() {
     let obj = Arc::new(DummyStruct::new(0));
     let lock = Arc::new(PFLock::new());
 
-    let num_threads = 2400;
+    let num_threads = 3;
+    let num_repeats = 100;
 
     let mut handles = vec![];
 
-    for i in 0..num_threads {
+    for _ in 0..num_threads {
         let obj_clone = Arc::clone(&obj);
         let lock_clone = Arc::clone(&lock);
 
         handles.push(thread::spawn(move || {
-            if i % 2 == 0 {
-                lock_clone.write_lock();
-                {
-                    *obj_clone.borrow_mut() += 1;
+            for i in 0..num_repeats {
+                if i % 2 == 0 {
+                    lock_clone.write_lock();
+                    {
+                        *obj_clone.borrow_mut() += 1;
+                    }
+                    lock_clone.write_unlock();
+                } else {
+                    lock_clone.read_lock();
+                    {
+                        let _ = *obj_clone.borrow();
+                    }
+                    lock_clone.read_unlock();
                 }
-                lock_clone.write_unlock();
-            } else {
-                lock_clone.read_lock();
-                {
-                    let _ = *obj_clone.borrow();
-                }
-                lock_clone.read_unlock();
             }
         }));
     }
@@ -57,5 +60,5 @@ fn increment() {
         let _ = handle.join().unwrap();
     }
 
-    assert_eq!(num_threads / 2, *obj.borrow());
+    assert_eq!((num_threads * num_repeats) / 2, *obj.borrow());
 }
