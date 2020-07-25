@@ -41,12 +41,13 @@ EMail: nemitz@cs.unc.edu; tamert@cs.unc.edu; anderson@cs.unc.edu
 #include "mem.h"
 
 // Phase-Fair (ticket) Lock
-#define PF_RINC  0x100 // reader increment
-#define PF_WBITS 0x3   // writer bits in rin
-#define PF_PRES  0x2   // writer present bit
-#define PF_PHID  0x1   // writer phase ID bit
+#define PF_RINC 0x100 // reader increment
+#define PF_WBITS 0x3  // writer bits in rin
+#define PF_PRES 0x2   // writer present bit
+#define PF_PHID 0x1   // writer phase ID bit
 
-typedef struct pft_lock_struct {
+typedef struct pft_lock_struct
+{
     volatile unsigned int rin;
     volatile unsigned int rout;
 
@@ -57,7 +58,7 @@ typedef struct pft_lock_struct {
 /*
  *  Phase-Fair (ticket) Lock: initialize.
  */
-static inline void pft_lock_init(pft_lock_t *lock)
+void pft_lock_init(pft_lock_t *lock)
 {
     lock->rin = 0;
     lock->rout = 0;
@@ -69,7 +70,7 @@ static inline void pft_lock_init(pft_lock_t *lock)
 /*
  *  Phase-Fair (ticket) Lock: read lock.
  */
-static inline void pft_read_lock(pft_lock_t *lock)
+void pft_read_lock(pft_lock_t *lock)
 {
     unsigned int w;
 
@@ -87,7 +88,7 @@ static inline void pft_read_lock(pft_lock_t *lock)
 /*
  *  Phase-Fair (ticket) Lock: read unlock.
  */
-static inline void pft_read_unlock(pft_lock_t *lock)
+void pft_read_unlock(pft_lock_t *lock)
 {
     // Increment rout to mark the read-lock returned
     __sync_fetch_and_add(&lock->rout, PF_RINC);
@@ -96,7 +97,7 @@ static inline void pft_read_unlock(pft_lock_t *lock)
 /*
  *  Phase-Fair (ticket) Lock: write lock.
  */
-static inline void pft_write_lock(pft_lock_t *lock)
+void pft_write_lock(pft_lock_t *lock)
 {
     unsigned int w, rticket, wticket;
 
@@ -122,7 +123,7 @@ static inline void pft_write_lock(pft_lock_t *lock)
 /*
  *  Phase-Fair (ticket) Lock: write unlock.
  */
-static inline void pft_write_unlock(pft_lock_t *lock)
+void pft_write_unlock(pft_lock_t *lock)
 {
     unsigned int andoperand;
 

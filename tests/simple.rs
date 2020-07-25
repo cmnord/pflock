@@ -1,4 +1,4 @@
-use pflock::PFLock;
+use pflock::PFLock_C;
 use std::cell::{Ref, RefCell, RefMut};
 use std::sync::Arc;
 use std::thread;
@@ -26,7 +26,7 @@ impl<T> DummyStruct<T> {
 #[test]
 fn simple() {
     let obj = Arc::new(DummyStruct::new(0));
-    let lock = Arc::new(PFLock::new());
+    let lock = Arc::new(PFLock_C::new());
 
     let num_threads = 3;
     let num_repeats = 100;

@@ -1,3 +1,9 @@
+#![allow(non_upper_case_globals)]
+#![allow(non_camel_case_types)]
+#![allow(non_snake_case)]
+
+include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+
 use std::sync::atomic::{spin_loop_hint, AtomicUsize, Ordering};
 
 pub struct PFLock {
@@ -64,5 +70,46 @@ impl PFLock {
         // Increment wout to indicate this write has released the lock
         // Only one writer should ever be here
         self.wout.fetch_add(1, Ordering::SeqCst);
+    }
+}
+
+pub struct PFLock_C(pft_lock_struct);
+
+impl PFLock_C {
+    pub fn new() -> PFLock_C {
+        let mut lock = pft_lock_struct {
+            rin: 0,
+            rout: 0,
+            win: 0,
+            wout: 0,
+        };
+        unsafe {
+            pft_lock_init(&mut lock);
+        }
+        PFLock_C(lock)
+    }
+
+    pub fn read_lock(&mut self) {
+        unsafe {
+            pft_read_lock(&mut self.0);
+        }
+    }
+
+    pub fn read_unlock(&mut self) {
+        unsafe {
+            pft_read_unlock(&mut self.0);
+        }
+    }
+
+    pub fn write_lock(&mut self) {
+        unsafe {
+            pft_write_lock(&mut self.0);
+        }
+    }
+
+    pub fn write_unlock(&mut self) {
+        unsafe {
+            pft_write_unlock(&mut self.0);
+        }
     }
 }
