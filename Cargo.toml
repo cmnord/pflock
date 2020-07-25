@@ -17,3 +17,7 @@ lock_api = "0.4.1"
 
 [dev-dependencies]
 rand = "0.7.3"
+
+[target.'cfg(loom)'.dependencies]
+loom = "0.3"
+

@@ -27,7 +27,9 @@
 //! } // write lock is dropped here
 //! ```
 use lock_api::{GuardSend, RawRwLock, RwLock};
-use std::sync::atomic::{spin_loop_hint, AtomicUsize, Ordering};
+use crate::sync::{spin_loop_hint, AtomicUsize, Ordering};
+
+pub mod sync;
 
 pub struct RawPFLock {
     rin: AtomicUsize,
