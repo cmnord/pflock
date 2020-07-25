@@ -55,9 +55,27 @@ c_reference"`, e.g.
 RUSTFLAGS="--cfg c_reference" cargo test
 ```
 
+## Testing with Loom
+
+This repo uses [Loom][loom] for permutation testing.
+
+Run loom with
+
+```bash
+RUSTFLAGS="--cfg loom" cargo test --test loom
+```
+
+If the test double-panics, run the test with `-- --test-threads=1 --nocapture` and the `RUST_BACKTRACE=1` env var, as described in [`loom#115`][loom115].
+
+```bash
+RUSTFLAGS="--cfg loom" RUST_BACKTRACE=1 cargo test --test loom -- --test-threads=1 --nocapture
+```
+
 ## License
 
 All code is under the MIT license except for the C implementation in
 [pflock_c/](https://github.com/cmnord/pflock/tree/cnord/ffi/pflock_c), which has its own license in the file.
 
 [paper]: https://www.cs.unc.edu/~anderson/papers/ecrts09b.pdf
+[loom]: https://lib.rs/crates/loom
+[loom115]: https://github.com/tokio-rs/loom/issues/115
