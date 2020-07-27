@@ -16,7 +16,7 @@ Systems"][paper] by Brandenburg et. al.
 
 ## License
 
-All code is under the MIT license except for [pft.h](pft.h), which has its
-own license in the file.
+All code is under the MIT license except for the C implementation in
+[pflock_c](pflock_c/), which has its own license in the file.
 
 [paper]: https://www.cs.unc.edu/~anderson/papers/ecrts09b.pdf
