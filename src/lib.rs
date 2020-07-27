@@ -89,27 +89,35 @@ impl PFLock_C {
         PFLock_C(lock)
     }
 
-    pub fn read_lock(&mut self) {
+    pub fn read_lock(&self) {
         unsafe {
-            pft_read_lock(&mut self.0);
+            let const_ptr = self as *const PFLock_C;
+            let mut_ptr = const_ptr as *mut PFLock_C;
+            pft_read_lock(&mut (*mut_ptr).0);
         }
     }
 
-    pub fn read_unlock(&mut self) {
+    pub fn read_unlock(&self) {
         unsafe {
-            pft_read_unlock(&mut self.0);
+            let const_ptr = self as *const PFLock_C;
+            let mut_ptr = const_ptr as *mut PFLock_C;
+            pft_read_unlock(&mut (*mut_ptr).0);
         }
     }
 
-    pub fn write_lock(&mut self) {
+    pub fn write_lock(&self) {
         unsafe {
-            pft_write_lock(&mut self.0);
+            let const_ptr = self as *const PFLock_C;
+            let mut_ptr = const_ptr as *mut PFLock_C;
+            pft_write_lock(&mut (*mut_ptr).0);
         }
     }
 
-    pub fn write_unlock(&mut self) {
+    pub fn write_unlock(&self) {
         unsafe {
-            pft_write_unlock(&mut self.0);
+            let const_ptr = self as *const PFLock_C;
+            let mut_ptr = const_ptr as *mut PFLock_C;
+            pft_write_unlock(&mut (*mut_ptr).0);
         }
     }
 }
