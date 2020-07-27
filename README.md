@@ -14,9 +14,17 @@ Systems"][paper] by Brandenburg et. al.
 }
 ```
 
+## C implementation
+
+A reference implementation in C is provided in [pflock_c/](pflock_c/). Run tests with the reference implementation using `RUSTFLAGS="--cfg c_reference"`, e.g.
+
+```bash
+RUSTFLAGS="--cfg c_reference" cargo test
+```
+
 ## License
 
 All code is under the MIT license except for the C implementation in
-[pflock_c](pflock_c/), which has its own license in the file.
+[pflock_c/](pflock_c/), which has its own license in the file.
 
 [paper]: https://www.cs.unc.edu/~anderson/papers/ecrts09b.pdf

@@ -1,35 +1,39 @@
-use pflock::PFLock_C;
-use std::cell::{Cell, Ref, RefCell, RefMut};
+use std::cell::{Cell, UnsafeCell};
 use std::sync::Arc;
 use std::thread;
 
-pub struct DummyRefCell<T>(RefCell<T>);
+#[cfg(not(c_reference))]
+use pflock::PFLock;
+#[cfg(c_reference)]
+use pflock::PFLock_C as PFLock;
 
-unsafe impl<T> Send for DummyRefCell<T> {}
-unsafe impl<T> Sync for DummyRefCell<T> {}
+pub struct MockUnsafeCell<T>(UnsafeCell<T>);
 
-impl<T> DummyRefCell<T> {
-    pub fn new(inner: T) -> DummyRefCell<T> {
-        DummyRefCell(RefCell::new(inner))
+unsafe impl<T> Send for MockUnsafeCell<T> {}
+unsafe impl<T> Sync for MockUnsafeCell<T> {}
+
+impl<T> MockUnsafeCell<T> {
+    pub fn new(inner: T) -> MockUnsafeCell<T> {
+        MockUnsafeCell(UnsafeCell::new(inner))
     }
 
-    pub fn borrow(&self) -> Ref<T> {
-        self.0.borrow()
+    pub fn borrow(&self) -> &T {
+        unsafe { &*self.0.get() }
     }
 
-    pub fn borrow_mut(&self) -> RefMut<T> {
-        self.0.borrow_mut()
+    pub fn borrow_mut(&self) -> &mut T {
+        unsafe { &mut *self.0.get() }
     }
 }
 
-pub struct DummyCell<T>(Cell<T>);
+pub struct MockCell<T>(Cell<T>);
 
-unsafe impl<T> Send for DummyCell<T> {}
-unsafe impl<T> Sync for DummyCell<T> {}
+unsafe impl<T> Send for MockCell<T> {}
+unsafe impl<T> Sync for MockCell<T> {}
 
-impl<T: Copy> DummyCell<T> {
-    pub fn new(inner: T) -> DummyCell<T> {
-        DummyCell(Cell::new(inner))
+impl<T: Copy> MockCell<T> {
+    pub fn new(inner: T) -> MockCell<T> {
+        MockCell(Cell::new(inner))
     }
 
     pub fn get(&self) -> T {
@@ -43,8 +47,8 @@ impl<T: Copy> DummyCell<T> {
 
 #[test]
 fn simple() {
-    let obj = Arc::new(DummyRefCell::new(0));
-    let lock = Arc::new(PFLock_C::new());
+    let obj = Arc::new(MockUnsafeCell::new(0));
+    let lock = Arc::new(PFLock::new());
 
     let num_threads = 3;
     let num_repeats = 100;
@@ -83,8 +87,8 @@ fn simple() {
 
 #[test]
 fn cell() {
-    let obj = Arc::new(DummyCell::new(0));
-    let lock = Arc::new(PFLock_C::new());
+    let obj = Arc::new(MockCell::new(0));
+    let lock = Arc::new(PFLock::new());
 
     let num_threads = 3;
     let num_repeats = 2000;
