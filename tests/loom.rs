@@ -4,14 +4,14 @@ use loom::thread;
 use pflock::PFLock;
 use std::cell::Cell;
 
-pub struct DummyStruct<T>(Cell<T>);
+pub struct DummyCell<T>(Cell<T>);
 
-unsafe impl<T> Send for DummyStruct<T> {}
-unsafe impl<T> Sync for DummyStruct<T> {}
+unsafe impl<T> Send for DummyCell<T> {}
+unsafe impl<T> Sync for DummyCell<T> {}
 
-impl<T: Copy> DummyStruct<T> {
-    pub fn new(inner: T) -> DummyStruct<T> {
-        DummyStruct(Cell::new(inner))
+impl<T: Copy> DummyCell<T> {
+    pub fn new(inner: T) -> DummyCell<T> {
+        DummyCell(Cell::new(inner))
     }
 
     pub fn set(&self, val: T) {
@@ -27,7 +27,7 @@ impl<T: Copy> DummyStruct<T> {
 #[should_panic]
 fn loom() {
     loom::model(|| {
-        let obj = Arc::new(DummyStruct::new(0));
+        let obj = Arc::new(DummyCell::new(0));
         let lock = Arc::new(PFLock::new());
 
         let num_threads = 3;
