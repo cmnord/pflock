@@ -115,9 +115,17 @@ fn read_write() {
     let wp = write_parallel(sleep_duration);
     println!("write parallel = {:?}", wp);
 
-    println!(
-        "write parallelism: +{:?} change, {:.3}% as fast",
-        wp - ws,
-        ws.div_duration_f64(wp)
-    );
+    if wp > ws {
+        println!(
+            "write parallelism: +{:?} change, {:.3}% as fast",
+            wp - ws,
+            ws.div_duration_f64(wp)
+        );
+    } else {
+        println!(
+            "write parallelism: -{:?} change, {:.3}x faster",
+            ws - wp,
+            ws.div_duration_f64(wp)
+        );
+    }
 }
