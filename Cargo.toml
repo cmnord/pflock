@@ -7,6 +7,8 @@ license = "MIT"
 description = "A phase-fair reader-writer lock that reduces worst-case blocking for readers. Especially useful for multiprocessor real-time systems."
 repository = "https://github.com/cmnord/pflock"
 readme = "README.md"
+keywords = ["rwlock", "thread", "lock", "real-time"]
+categories = ["concurrency"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
