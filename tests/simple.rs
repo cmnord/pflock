@@ -1,3 +1,4 @@
+use pflock::PFLock;
 use std::cell::{Cell, UnsafeCell};
 use std::sync::Arc;
 use std::thread;
@@ -42,8 +43,8 @@ impl<T: Copy> MockCell<T> {
 
 #[test]
 fn simple() {
-    let obj = Arc::new(MockUnsafeCell::new(0));
-    let lock = Arc::new(PFLock::new());
+    let obj = MockUnsafeCell::new(0);
+    let lock = Arc::new(PFLock::new(obj));
 
     let num_threads = 3;
     let num_repeats = 100;
@@ -51,23 +52,16 @@ fn simple() {
     let mut handles = vec![];
 
     for _ in 0..num_threads {
-        let obj_clone = Arc::clone(&obj);
         let lock_clone = Arc::clone(&lock);
 
         handles.push(thread::spawn(move || {
             for i in 0..num_repeats {
                 if i % 2 == 0 {
-                    lock_clone.write_lock();
-                    {
-                        *obj_clone.borrow_mut() += 1;
-                    }
-                    lock_clone.write_unlock();
+                    let guard = lock_clone.write();
+                    *guard.borrow_mut() += 1;
                 } else {
-                    lock_clone.read_lock();
-                    {
-                        let _ = *obj_clone.borrow();
-                    }
-                    lock_clone.read_unlock();
+                    let guard = lock_clone.read();
+                    let _ = *guard.borrow();
                 }
             }
         }));
@@ -77,13 +71,13 @@ fn simple() {
         let _ = handle.join().unwrap();
     }
 
-    assert_eq!((num_threads * num_repeats) / 2, *obj.borrow());
+    assert_eq!((num_threads * num_repeats) / 2, *lock.read().borrow());
 }
 
 #[test]
 fn cell() {
-    let obj = Arc::new(MockCell::new(0));
-    let lock = Arc::new(PFLock::new());
+    let obj = MockCell::new(0);
+    let lock = Arc::new(PFLock::new(obj));
 
     let num_threads = 3;
     let num_repeats = 2000;
@@ -91,23 +85,16 @@ fn cell() {
     let mut handles = vec![];
 
     for _ in 0..num_threads {
-        let obj_clone = Arc::clone(&obj);
         let lock_clone = Arc::clone(&lock);
 
         handles.push(thread::spawn(move || {
             for i in 0..num_repeats {
                 if i % 2 == 0 {
-                    lock_clone.write_lock();
-                    {
-                        obj_clone.set(obj_clone.get() + 1);
-                    }
-                    lock_clone.write_unlock();
+                    let guard = lock_clone.write();
+                    guard.set(guard.get() + 1);
                 } else {
-                    lock_clone.read_lock();
-                    {
-                        let _ = obj_clone.get();
-                    }
-                    lock_clone.read_unlock();
+                    let guard = lock_clone.read();
+                    let _ = guard.get();
                 }
             }
         }));
@@ -117,5 +104,5 @@ fn cell() {
         let _ = handle.join().unwrap();
     }
 
-    assert_eq!((num_threads * num_repeats) / 2, obj.get());
+    assert_eq!((num_threads * num_repeats) / 2, lock.read().get());
 }

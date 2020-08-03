@@ -1,10 +1,11 @@
+use lock_api::{GuardSend, RawRwLock, RwLock};
 use std::sync::atomic::{spin_loop_hint, AtomicUsize, Ordering};
 
-pub struct PFLock {
-    pub rin: AtomicUsize,
-    pub rout: AtomicUsize,
-    pub win: AtomicUsize,
-    pub wout: AtomicUsize,
+pub struct RawPFLock {
+    rin: AtomicUsize,
+    rout: AtomicUsize,
+    win: AtomicUsize,
+    wout: AtomicUsize,
 }
 
 const RINC: usize = 0x100; // reader increment
@@ -14,17 +15,17 @@ const PHID: usize = 0x1; // phase ID bit
 
 const ZERO_MASK: usize = !255usize;
 
-impl PFLock {
-    pub const fn new() -> PFLock {
-        PFLock {
-            rin: AtomicUsize::new(0),
-            rout: AtomicUsize::new(0),
-            win: AtomicUsize::new(0),
-            wout: AtomicUsize::new(0),
-        }
-    }
+unsafe impl RawRwLock for RawPFLock {
+    const INIT: RawPFLock = RawPFLock {
+        rin: AtomicUsize::new(0),
+        rout: AtomicUsize::new(0),
+        win: AtomicUsize::new(0),
+        wout: AtomicUsize::new(0),
+    };
 
-    pub fn read_lock(&self) {
+    type GuardMarker = GuardSend;
+
+    fn lock_shared(&self) {
         // Increment the rin count and read the writer bits
         let w = self.rin.fetch_add(RINC, Ordering::Relaxed) & WBITS;
 
@@ -35,12 +36,23 @@ impl PFLock {
         }
     }
 
-    pub fn read_unlock(&self) {
+    unsafe fn unlock_shared(&self) {
         // Increment rout to mark the read-lock returned
         self.rout.fetch_add(RINC, Ordering::Relaxed);
     }
 
-    pub fn write_lock(&self) {
+    fn try_lock_shared(&self) -> bool {
+        let w = self.rin.fetch_add(RINC, Ordering::Relaxed) & WBITS;
+
+        if w == 0 || w != (self.rin.load(Ordering::Relaxed) & WBITS) {
+            true
+        } else {
+            self.rout.fetch_add(RINC, Ordering::Relaxed);
+            false
+        }
+    }
+
+    fn lock_exclusive(&self) {
         // Wait until it is my turn to write-lock the resource
         let wticket = self.win.fetch_add(1, Ordering::Relaxed);
         while wticket != self.wout.load(Ordering::Relaxed) {
@@ -57,7 +69,7 @@ impl PFLock {
         }
     }
 
-    pub fn write_unlock(&self) {
+    unsafe fn unlock_exclusive(&self) {
         // Clear the least-significant byte of rin
         self.rin.fetch_and(ZERO_MASK, Ordering::Relaxed);
 
@@ -65,11 +77,25 @@ impl PFLock {
         // Only one writer should ever be here
         self.wout.fetch_add(1, Ordering::Relaxed);
     }
-}
 
+    fn try_lock_exclusive(&self) -> bool {
+        let wticket = self.win.fetch_add(1, Ordering::Relaxed);
+        if wticket != self.wout.load(Ordering::Relaxed) {
+            self.wout.fetch_add(1, Ordering::Relaxed);
+            return false;
+        }
+        let w = PRES | (wticket & PHID);
+        let rticket = self.rin.fetch_add(w, Ordering::Relaxed);
+
+        if rticket != self.rout.load(Ordering::Relaxed) {
+            self.rin.fetch_and(ZERO_MASK, Ordering::Relaxed);
+            self.wout.fetch_add(1, Ordering::Relaxed);
+            return false;
         }
 
-        }
-
+        true
     }
 }
+
+pub type PFLock<T> = RwLock<RawPFLock, T>;
+pub type PFLockGuard<'a, T> = lock_api::MutexGuard<'a, RawPFLock, T>;

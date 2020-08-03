@@ -8,15 +8,14 @@ use std::time::{Duration, Instant};
 const NUM_ITERATIONS: usize = 40;
 
 fn read_serial(sleep_duration: Duration) -> Duration {
-    let lock = Arc::new(PFLock::new());
+    let lock = Arc::new(PFLock::new(0));
 
     let now = Instant::now();
     for _ in 0..NUM_ITERATIONS {
         let arc_clone = Arc::clone(&lock);
         thread::spawn(move || {
-            arc_clone.read_lock();
+            let _ = arc_clone.read();
             thread::sleep(sleep_duration);
-            arc_clone.read_unlock();
         })
         .join()
         .unwrap();
@@ -26,7 +25,7 @@ fn read_serial(sleep_duration: Duration) -> Duration {
 }
 
 fn read_parallel(sleep_duration: Duration) -> Duration {
-    let lock = Arc::new(PFLock::new());
+    let lock = Arc::new(PFLock::new(0));
 
     let mut threads = vec![];
 
@@ -34,9 +33,8 @@ fn read_parallel(sleep_duration: Duration) -> Duration {
     for _ in 0..NUM_ITERATIONS {
         let arc_clone = Arc::clone(&lock);
         threads.push(thread::spawn(move || {
-            arc_clone.read_lock();
+            let _ = arc_clone.read();
             thread::sleep(sleep_duration);
-            arc_clone.read_unlock();
         }));
     }
 
@@ -49,15 +47,14 @@ fn read_parallel(sleep_duration: Duration) -> Duration {
 }
 
 fn write_serial(sleep_duration: Duration) -> Duration {
-    let lock = Arc::new(PFLock::new());
+    let lock = Arc::new(PFLock::new(0));
 
     let now = Instant::now();
     for _ in 0..NUM_ITERATIONS {
         let arc_clone = Arc::clone(&lock);
         thread::spawn(move || {
-            arc_clone.write_lock();
+            let _ = arc_clone.write();
             thread::sleep(sleep_duration);
-            arc_clone.write_unlock();
         })
         .join()
         .unwrap();
@@ -67,7 +64,7 @@ fn write_serial(sleep_duration: Duration) -> Duration {
 }
 
 fn write_parallel(sleep_duration: Duration) -> Duration {
-    let lock = Arc::new(PFLock::new());
+    let lock = Arc::new(PFLock::new(0));
 
     let mut threads = vec![];
 
@@ -75,9 +72,8 @@ fn write_parallel(sleep_duration: Duration) -> Duration {
     for _ in 0..NUM_ITERATIONS {
         let arc_clone = Arc::clone(&lock);
         threads.push(thread::spawn(move || {
-            arc_clone.write_lock();
+            let _ = arc_clone.write();
             thread::sleep(sleep_duration);
-            arc_clone.write_unlock();
         }));
     }
 
