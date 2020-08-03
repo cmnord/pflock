@@ -3,6 +3,8 @@
 From ["Reader-Writer Synchronization for Shared-Memory Multiprocessor Real-Time
 Systems"][paper] by Brandenburg et. al.
 
+> Reader  preference,  writer  preference,  and  task-fair  reader-writer locks are shown to cause undue blocking in multiprocessor real-time systems. A new phase-fair reader-writer lock is proposed as an alternative that significantly reduces worst-case blocking for readers.
+
 ```latex
 @inproceedings{brandenburg2009reader,
   title={Reader-writer synchronization for shared-memory multiprocessor real-time systems},
