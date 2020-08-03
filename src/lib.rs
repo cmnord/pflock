@@ -3,6 +3,10 @@
 //! Real-Time Systems"](https://www.cs.unc.edu/~anderson/papers/ecrts09b.pdf)
 //! by Brandenburg et. al.
 //!
+//! > Reader preference, writer preference, and task-fair reader-writer locks are
+//! > shown to cause undue blocking in multiprocessor real-time systems. A new
+//! > phase-fair reader-writer lock is proposed as an alternative that
+//! > significantly reduces worst-case blocking for readers.
 //!
 //! # Example
 //!
@@ -26,6 +30,20 @@
 //!     assert_eq!(*w, 6);
 //! } // write lock is dropped here
 //! ```
+//!
+//! # Spin vs. suspend
+//!
+//! `PFLock` is a spinlock specifically targeted at **short critical sections** and
+//! does not suspend threads while blocking. Section 3 of the paper addresses this:
+//!
+//! > The terms “short” and “long” arise because (intuitively) spinning is
+//! > appropriate only for short critical sections, since spinning wastes processor
+//! > time. However, two recent studies have shown that, in terms of
+//! > schedulability, spinning is usually preferable to suspending when overheads
+//! > are considered [11, 15]. Based on these trends (and due to space
+//! > constraints), we restrict our focus to short resources in this paper and
+//! > delegate RW synchronization of long resources to future work.
+
 use lock_api::{GuardSend, RawRwLock, RwLock};
 use std::sync::atomic::{spin_loop_hint, AtomicUsize, Ordering};
 
