@@ -1,3 +1,31 @@
+//! This library provides a phase-fair reader-writer lock, as described in the
+//! paper ["Reader-Writer Synchronization for Shared-Memory Multiprocessor
+//! Real-Time Systems"](https://www.cs.unc.edu/~anderson/papers/ecrts09b.pdf)
+//! by Brandenburg et. al.
+//!
+//!
+//! # Example
+//!
+//! ```
+//! use pflock::PFLock;
+//!
+//! let lock = PFLock::new(5);
+//!
+//! // many reader locks can be held at once
+//! {
+//!     let r1 = lock.read();
+//!     let r2 = lock.read();
+//!     assert_eq!(*r1, 5);
+//!     assert_eq!(*r2, 5);
+//! } // read locks are dropped at this point
+//!
+//! // only one write lock may be held, however
+//! {
+//!     let mut w = lock.write();
+//!     *w += 1;
+//!     assert_eq!(*w, 6);
+//! } // write lock is dropped here
+//! ```
 use lock_api::{GuardSend, RawRwLock, RwLock};
 use std::sync::atomic::{spin_loop_hint, AtomicUsize, Ordering};
 
@@ -97,5 +125,6 @@ unsafe impl RawRwLock for RawPFLock {
     }
 }
 
+/// A phase-fair reader-writer lock.
 pub type PFLock<T> = RwLock<RawPFLock, T>;
 pub type PFLockGuard<'a, T> = lock_api::MutexGuard<'a, RawPFLock, T>;
