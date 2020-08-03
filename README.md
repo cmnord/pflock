@@ -1,9 +1,36 @@
 # PFlock: Phase-Fair Reader-Writer Lock
 
-From ["Reader-Writer Synchronization for Shared-Memory Multiprocessor Real-Time
-Systems"][paper] by Brandenburg et. al.
+This library provides a phase-fair reader-writer lock, as described in the
+paper ["Reader-Writer Synchronization for Shared-Memory Multiprocessor
+Real-Time Systems"][paper]. by Brandenburg et. al.
 
-> Reader  preference,  writer  preference,  and  task-fair  reader-writer locks are shown to cause undue blocking in multiprocessor real-time systems. A new phase-fair reader-writer lock is proposed as an alternative that significantly reduces worst-case blocking for readers.
+> Reader preference, writer preference, and task-fair reader-writer locks are
+> shown to cause undue blocking in multiprocessor real-time systems. A new
+> phase-fair reader-writer lock is proposed as an alternative that
+> significantly reduces worst-case blocking for readers.
+
+## Example
+
+```rust
+use pflock::PFLock;
+
+let lock = PFLock::new(5);
+
+// many reader locks can be held at once
+{
+    let r1 = lock.read();
+    let r2 = lock.read();
+    assert_eq!(*r1, 5);
+    assert_eq!(*r2, 5);
+} // read locks are dropped at this point
+
+// only one write lock may be held, however
+{
+    let mut w = lock.write();
+    *w += 1;
+    assert_eq!(*w, 6);
+} // write lock is dropped here
+```
 
 ```latex
 @inproceedings{brandenburg2009reader,
