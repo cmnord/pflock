@@ -1,9 +1,3 @@
-#![allow(non_upper_case_globals)]
-#![allow(non_camel_case_types)]
-#![allow(non_snake_case)]
-
-include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
-
 use std::sync::atomic::{spin_loop_hint, AtomicUsize, Ordering};
 
 pub struct PFLock {
@@ -73,51 +67,9 @@ impl PFLock {
     }
 }
 
-pub struct PFLock_C(pft_lock_struct);
-
-impl PFLock_C {
-    pub fn new() -> PFLock_C {
-        let mut lock = pft_lock_struct {
-            rin: 0,
-            rout: 0,
-            win: 0,
-            wout: 0,
-        };
-        unsafe {
-            pft_lock_init(&mut lock);
         }
-        PFLock_C(lock)
-    }
 
-    pub fn read_lock(&self) {
-        unsafe {
-            let const_ptr = self as *const PFLock_C;
-            let mut_ptr = const_ptr as *mut PFLock_C;
-            pft_read_lock(&mut (*mut_ptr).0);
         }
-    }
 
-    pub fn read_unlock(&self) {
-        unsafe {
-            let const_ptr = self as *const PFLock_C;
-            let mut_ptr = const_ptr as *mut PFLock_C;
-            pft_read_unlock(&mut (*mut_ptr).0);
-        }
-    }
-
-    pub fn write_lock(&self) {
-        unsafe {
-            let const_ptr = self as *const PFLock_C;
-            let mut_ptr = const_ptr as *mut PFLock_C;
-            pft_write_lock(&mut (*mut_ptr).0);
-        }
-    }
-
-    pub fn write_unlock(&self) {
-        unsafe {
-            let const_ptr = self as *const PFLock_C;
-            let mut_ptr = const_ptr as *mut PFLock_C;
-            pft_write_unlock(&mut (*mut_ptr).0);
-        }
     }
 }

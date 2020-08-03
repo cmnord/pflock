@@ -2,11 +2,6 @@ use std::cell::{Cell, UnsafeCell};
 use std::sync::Arc;
 use std::thread;
 
-#[cfg(not(c_reference))]
-use pflock::PFLock;
-#[cfg(c_reference)]
-use pflock::PFLock_C as PFLock;
-
 pub struct MockUnsafeCell<T>(UnsafeCell<T>);
 
 unsafe impl<T> Send for MockUnsafeCell<T> {}
