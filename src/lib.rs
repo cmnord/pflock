@@ -79,9 +79,13 @@ impl PFLock_C {
     pub fn new() -> PFLock_C {
         let mut lock = pft_lock_struct {
             rin: 0,
+            _buf1: [0;15],
             rout: 0,
+            _buf2: [0;15],
             win: 0,
+            _buf3: [0;15],
             wout: 0,
+            _buf4: [0;15],
         };
         unsafe {
             pft_lock_init(&mut lock);

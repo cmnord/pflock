@@ -46,14 +46,20 @@ EMail: nemitz@cs.unc.edu; tamert@cs.unc.edu; anderson@cs.unc.edu
 #define PF_PRES 0x2   // writer present bit
 #define PF_PHID 0x1   // writer phase ID bit
 
-typedef struct pft_lock_struct
-{
+typedef struct pft_lock_struct {
     volatile unsigned int rin;
+    unsigned int _buf1[15];
+
     volatile unsigned int rout;
+    unsigned int _buf2[15];
 
     volatile unsigned int win;
+    unsigned int _buf3[15];
+
     volatile unsigned int wout;
-} pft_lock_t;
+    unsigned int _buf4[15];
+} __attribute ((aligned (16) )) pft_lock_t;
+
 
 /*
  *  Phase-Fair (ticket) Lock: initialize.
