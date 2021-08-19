@@ -35,12 +35,13 @@ EMail: nemitz@cs.unc.edu; tamert@cs.unc.edu; anderson@cs.unc.edu
 
 **/
 
-#ifndef PFT_H
-#define PFT_H
+#ifndef PFTC_H
+#define PFTC_H
 
 #include "mem.h"
 #include <linux/types.h>
 
+/*
 typedef __u32 u32;
 static __inline__ u32 xadd32(u32 i, volatile u32* mem)
 {
@@ -50,39 +51,26 @@ static __inline__ u32 xadd32(u32 i, volatile u32* mem)
 		:"+r" (i), "+m" (*mem)
 		: : "memory");
 	return i + inc;
-}
+}*/
 
 
 // Phase-Fair (ticket) Lock
-#define PF_RINC 0x100 // reader increment
-#define PF_WBITS 0x3  // writer bits in rin
-#define PF_PRES 0x2   // writer present bit
-#define PF_PHID 0x1   // writer phase ID bit
 
-typedef struct pft_lock_struct {
+typedef struct pftc_lock_struct {
 
     volatile u32 win;
-    u32 _b1;
-    unsigned int _buf1[15];
-
     volatile u32 wout;
-    u32 _b2;
-    unsigned int _buf2[15];
-
     volatile u32 rin;
-    u32 _b3;
-    unsigned int _buf3[15];
+    volatile u32 rout;
+    unsigned int _buf1[14];
 
-    volatile u32  rout;
-     u32 _b4;
-     unsigned int _buf4[15];
-} __attribute ((aligned (16) )) pft_lock_t;
+} __attribute ((aligned (16) )) pftc_lock_t;
 
 
 /*
  *  Phase-Fair (ticket) Lock: initialize.
  */
-void pft_lock_init(pft_lock_t *lock)
+void pftc_lock_init(pftc_lock_t *lock)
 {
     lock->rin = 0;
     lock->rout = 0;
@@ -94,7 +82,7 @@ void pft_lock_init(pft_lock_t *lock)
 /*
  *  Phase-Fair (ticket) Lock: read lock.
  */
-void pft_read_lock(pft_lock_t *l)
+void pftc_read_lock(pftc_lock_t *l)
 {
    /* unsigned int w;
 
@@ -117,7 +105,7 @@ void pft_read_lock(pft_lock_t *l)
 /*
  *  Phase-Fair (ticket) Lock: read unlock.
  */
-void pft_read_unlock(pft_lock_t *l)
+void pftc_read_unlock(pftc_lock_t *l)
 {
     // Increment rout to mark the read-lock returned
     //__sync_fetch_and_add(&lock->rout, PF_RINC);
@@ -128,7 +116,7 @@ void pft_read_unlock(pft_lock_t *l)
 /*
  *  Phase-Fair (ticket) Lock: write lock.
  */
-void pft_write_lock(pft_lock_t *l)
+void pftc_write_lock(pftc_lock_t *l)
 {
     /*
     unsigned int w, rticket, wticket;
@@ -164,7 +152,7 @@ void pft_write_lock(pft_lock_t *l)
 /*
  *  Phase-Fair (ticket) Lock: write unlock.
  */
-void pft_write_unlock(pft_lock_t *l)
+void pftc_write_unlock(pftc_lock_t *l)
 {
 	/*
     unsigned int andoperand;
@@ -181,4 +169,4 @@ void pft_write_unlock(pft_lock_t *l)
 	l->wout++;	
 }
 
-#endif // PFT_H
+#endif // PFTC_H

@@ -1,6 +1,7 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
+#![feature(const_fn)]
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
@@ -76,20 +77,25 @@ impl PFLock {
 pub struct PFLock_C(pft_lock_struct);
 
 impl PFLock_C {
-    pub fn new() -> PFLock_C {
+    pub const fn new() -> PFLock_C {
         let mut lock = pft_lock_struct {
             rin: 0,
+            _b1 : 0,
             _buf1: [0;15],
-            rout: 0,
+            wout: 0,
+            _b2 : 0,
             _buf2: [0;15],
             win: 0,
+            _b3: 0,
             _buf3: [0;15],
-            wout: 0,
+            rout: 0,
+            _b4 : 0,
             _buf4: [0;15],
+            
         };
-        unsafe {
+        /*unsafe {
             pft_lock_init(&mut lock);
-        }
+        }*/
         PFLock_C(lock)
     }
 
@@ -125,3 +131,55 @@ impl PFLock_C {
         }
     }
 }
+
+pub struct PFLockc_C(pftc_lock_struct);
+
+impl PFLockc_C {
+    pub fn new() -> PFLockc_C {
+        let mut lock = pftc_lock_struct {
+            rin: 0,
+            wout: 0,
+            win: 0,
+            rout: 0,
+            _buf1: [0;14],
+
+        };
+        unsafe {
+            pftc_lock_init(&mut lock);
+        }
+        PFLockc_C(lock)
+    }
+
+    pub fn read_lock(&self) {
+        unsafe {
+            let const_ptr = self as *const PFLockc_C;
+            let mut_ptr = const_ptr as *mut PFLockc_C;
+            pftc_read_lock(&mut (*mut_ptr).0);
+        }
+    }
+
+    pub fn read_unlock(&self) {
+        unsafe {
+            let const_ptr = self as *const PFLockc_C;
+            let mut_ptr = const_ptr as *mut PFLockc_C;
+            pftc_read_unlock(&mut (*mut_ptr).0);
+        }
+    }
+
+    pub fn write_lock(&self) {
+        unsafe {
+            let const_ptr = self as *const PFLockc_C;
+            let mut_ptr = const_ptr as *mut PFLockc_C;
+            pftc_write_lock(&mut (*mut_ptr).0);
+        }
+    }
+
+    pub fn write_unlock(&self) {
+        unsafe {
+            let const_ptr = self as *const PFLockc_C;
+            let mut_ptr = const_ptr as *mut PFLockc_C;
+            pftc_write_unlock(&mut (*mut_ptr).0);
+        }
+    }
+}
+
