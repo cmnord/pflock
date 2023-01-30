@@ -46,8 +46,9 @@
 
 #![no_std]
 
+use core::hint::spin_loop;
+use core::sync::atomic::{AtomicUsize, Ordering};
 use lock_api::{GuardSend, RawRwLock, RwLock};
-use core::sync::atomic::{spin_loop_hint, AtomicUsize, Ordering};
 
 pub struct RawPFLock {
     rin: AtomicUsize,
@@ -80,7 +81,7 @@ unsafe impl RawRwLock for RawPFLock {
         // Spin (wait) if there is a writer present (w != 0), until either PRES
         // and/or PHID flips
         while (w != 0) && (w == (self.rin.load(Ordering::Relaxed) & WBITS)) {
-            spin_loop_hint();
+            spin_loop();
         }
     }
 
@@ -104,7 +105,7 @@ unsafe impl RawRwLock for RawPFLock {
         // Wait until it is my turn to write-lock the resource
         let wticket = self.win.fetch_add(1, Ordering::Relaxed);
         while wticket != self.wout.load(Ordering::Relaxed) {
-            spin_loop_hint();
+            spin_loop();
         }
 
         // Set the write-bits of rin to indicate this writer is here
@@ -113,7 +114,7 @@ unsafe impl RawRwLock for RawPFLock {
 
         // Wait until all current readers have finished (i.e. rout catches up)
         while rticket != self.rout.load(Ordering::Relaxed) {
-            spin_loop_hint();
+            spin_loop();
         }
     }
 
