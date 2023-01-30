@@ -44,8 +44,10 @@
 //! > constraints), we restrict our focus to short resources in this paper and
 //! > delegate RW synchronization of long resources to future work.
 
+#![no_std]
+
 use lock_api::{GuardSend, RawRwLock, RwLock};
-use std::sync::atomic::{spin_loop_hint, AtomicUsize, Ordering};
+use core::sync::atomic::{spin_loop_hint, AtomicUsize, Ordering};
 
 pub struct RawPFLock {
     rin: AtomicUsize,
